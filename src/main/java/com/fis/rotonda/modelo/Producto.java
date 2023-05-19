@@ -1,5 +1,7 @@
 package com.fis.rotonda.modelo;
 
+import java.util.List;
+
 public class Producto {
 	
 	//Atributos
@@ -10,6 +12,8 @@ public class Producto {
 	private double precio;
 	private String descripcion;
 	private String uriFoto;
+	
+	private static List<Producto> productosDisponibles;
 	
 	//Constructores
 	public Producto(String nombre, long cantidad, Categoria categoria, double precio, String descripcion, String uriFoto) {
@@ -73,6 +77,12 @@ public class Producto {
 	}
 	public void setCategoria(Categoria categoria) {
 		this.categoria = categoria;
+	}
+	public static List<Producto> getProductosDisponibles() {
+		return productosDisponibles;
+	}
+	public static void setProductosDisponibles(List<Producto> productosDisponibles) {
+		Producto.productosDisponibles = productosDisponibles;
 	}
 
 	@Override

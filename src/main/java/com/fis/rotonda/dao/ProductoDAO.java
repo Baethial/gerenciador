@@ -53,6 +53,40 @@ public class ProductoDAO {
         }
     }
 	
+	public Producto obtenerProducto(long id) {
+        Producto resultado = null;
+
+        try {
+            final PreparedStatement statement = con
+                    .prepareStatement("SELECT * FROM productos WHERE producto_id = ?");
+    
+            try (statement) {
+            	statement.setLong(1, id);
+                statement.execute();
+    
+                final ResultSet resultSet = statement.getResultSet();
+    
+                try (resultSet) {
+                    
+                	resultado = new Producto(
+                            resultSet.getLong("producto_id"),
+                            resultSet.getString("producto_nombre"),
+                            resultSet.getLong("producto_cantidad"),
+                            Categoria.valueOf(resultSet.getString("producto_categoria").toUpperCase()),
+                            resultSet.getDouble("producto_precio"),
+                            resultSet.getString("producto_descripcion"),
+                            resultSet.getString("producto_uri_foto")
+                            ); 
+                    
+                }
+            }
+        } catch (SQLException e) {
+            throw new RuntimeException(e);
+        }
+
+        return resultado;
+    }
+	
 	public List<Producto> listar() {
         List<Producto> resultado = new ArrayList<>();
 
@@ -61,6 +95,41 @@ public class ProductoDAO {
                     .prepareStatement("SELECT * FROM productos");
     
             try (statement) {
+                statement.execute();
+    
+                final ResultSet resultSet = statement.getResultSet();
+    
+                try (resultSet) {
+                    while (resultSet.next()) {
+                        resultado.add(new Producto(
+                                resultSet.getLong("producto_id"),
+                                resultSet.getString("producto_nombre"),
+                                resultSet.getLong("producto_cantidad"),
+                                Categoria.valueOf(resultSet.getString("producto_categoria").toUpperCase()),
+                                resultSet.getDouble("producto_precio"),
+                                resultSet.getString("producto_descripcion"),
+                                resultSet.getString("producto_uri_foto")
+                                )); 
+                    }
+                }
+            }
+        } catch (SQLException e) {
+            throw new RuntimeException(e);
+        }
+
+        return resultado;
+    }
+	
+	public List<Producto> listar(Categoria categoria) {
+    	List<Producto> resultado = new ArrayList<>();
+
+        try {
+            final PreparedStatement statement = con
+                    .prepareStatement("SELECT * FROM productos "
+                    		+ "WHERE producto_categoria = ?");
+    
+            try (statement) {
+            	statement.setString(1, categoria.toString());
                 statement.execute();
     
                 final ResultSet resultSet = statement.getResultSet();
@@ -132,41 +201,36 @@ public class ProductoDAO {
             throw new RuntimeException(e);
         }
     }
-
-    public List<Producto> listar(Categoria categoria) {
-    	List<Producto> resultado = new ArrayList<>();
-
+    
+    public boolean modificarCantidad(long id, long cantidad) {
+    	
+    	long existencias = obtenerProducto(id).getCantidad();
+    	long nuevaCantidad = existencias + cantidad;
+    	
+    	if (nuevaCantidad < 0) {
+    		return false;
+    	}
+    	
         try {
-            final PreparedStatement statement = con
-                    .prepareStatement("SELECT * FROM productos "
-                    		+ "WHERE producto_categoria = ?");
-    
+            final PreparedStatement statement = con.prepareStatement(
+                    "UPDATE productos SET "
+                    + "producto_cantidad = ?, "
+                    + "WHERE producto_id = ?");
+
             try (statement) {
-            	statement.setString(1, categoria.toString());
+                statement.setLong(1, nuevaCantidad);
+                statement.setLong(2, id);
                 statement.execute();
-    
-                final ResultSet resultSet = statement.getResultSet();
-    
-                try (resultSet) {
-                    while (resultSet.next()) {
-                        resultado.add(new Producto(
-                                resultSet.getLong("producto_id"),
-                                resultSet.getString("producto_nombre"),
-                                resultSet.getLong("producto_cantidad"),
-                                Categoria.valueOf(resultSet.getString("producto_categoria").toUpperCase()),
-                                resultSet.getDouble("producto_precio"),
-                                resultSet.getString("producto_descripcion"),
-                                resultSet.getString("producto_uri_foto")
-                                )); 
-                    }
-                }
+
+                return true;
             }
         } catch (SQLException e) {
+        	e.printStackTrace();
             throw new RuntimeException(e);
         }
-
-        return resultado;
     }
+
+    
 	
 
 }
