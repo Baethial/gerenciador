@@ -37,16 +37,9 @@ public class ProductoDAO {
                 statement.setString(6, producto.getUriFoto());
     
                 statement.execute();
+                //con.commit();
     
                 final ResultSet resultSet = statement.getGeneratedKeys();
-    
-                try (resultSet) {
-                    while (resultSet.next()) {
-                        producto.setId(resultSet.getInt(1));
-                        
-                        System.out.println(String.format("Fue insertado el producto: %s", producto));
-                    }
-                }
             }
         } catch (SQLException e) {
             throw new RuntimeException(e);
@@ -68,6 +61,7 @@ public class ProductoDAO {
     
                 try (resultSet) {
                     
+                	resultSet.next();
                 	resultado = new Producto(
                             resultSet.getLong("producto_id"),
                             resultSet.getString("producto_nombre"),
@@ -76,8 +70,7 @@ public class ProductoDAO {
                             resultSet.getDouble("producto_precio"),
                             resultSet.getString("producto_descripcion"),
                             resultSet.getString("producto_uri_foto")
-                            ); 
-                    
+                            );
                 }
             }
         } catch (SQLException e) {
@@ -155,13 +148,15 @@ public class ProductoDAO {
         return resultado;
     }
 
-    public int eliminar(Integer id) {
+    public int eliminar(long id) {
         try {
             final PreparedStatement statement = con.prepareStatement("DELETE FROM productos WHERE producto_id = ?");
 
             try (statement) {
-                statement.setInt(1, id);
+                statement.setLong(1, id);
                 statement.execute();
+                
+                //con.commit();
 
                 int updateCount = statement.getUpdateCount();
 
@@ -172,7 +167,12 @@ public class ProductoDAO {
         }
     }
 
-    public int modificar(String nombre, long cantidad, Double precio, String descripcion, String URI, long id) {
+    public boolean modificar(String nombre, long cantidad, Double precio, String descripcion, String URI, long id) {
+    	
+    	if (id <=0 || obtenerProducto(id) == null) {
+    		return false;
+    	}
+    	
         try {
             final PreparedStatement statement = con.prepareStatement(
                     "UPDATE productos SET "
@@ -192,9 +192,11 @@ public class ProductoDAO {
                 statement.setLong(6, id);
                 statement.execute();
 
+                //con.commit();
+                
                 int updateCount = statement.getUpdateCount();
 
-                return updateCount;
+                return true;
             }
         } catch (SQLException e) {
         	e.printStackTrace();
@@ -214,7 +216,7 @@ public class ProductoDAO {
         try {
             final PreparedStatement statement = con.prepareStatement(
                     "UPDATE productos SET "
-                    + "producto_cantidad = ?, "
+                    + "producto_cantidad = ? "
                     + "WHERE producto_id = ?");
 
             try (statement) {
@@ -222,6 +224,8 @@ public class ProductoDAO {
                 statement.setLong(2, id);
                 statement.execute();
 
+                //con.commit();
+                
                 return true;
             }
         } catch (SQLException e) {
@@ -229,8 +233,4 @@ public class ProductoDAO {
             throw new RuntimeException(e);
         }
     }
-
-    
-	
-
 }

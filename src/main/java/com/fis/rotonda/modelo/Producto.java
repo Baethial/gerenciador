@@ -1,6 +1,7 @@
 package com.fis.rotonda.modelo;
 
 import java.util.List;
+import java.util.Objects;
 
 public class Producto {
 	
@@ -87,10 +88,27 @@ public class Producto {
 
 	@Override
 	public String toString() {
-		return "Producto " + id + ":\n\t nombre=" + nombre + ",\n\t cantidad=" + cantidad + ",\n\t categoria=" + categoria
-				+ ",\n\t precio=" + precio + ",\n\t descripcion=" + descripcion + ",\n\t uriFoto=" + uriFoto;
+		return "Producto " + id + ":\n\t nombre=" + nombre /*+ ",\n\t cantidad=" + cantidad + ",\n\t categoria=" + categoria
+				+ ",\n\t precio=" + precio + ",\n\t descripcion=" + descripcion + ",\n\t uriFoto=" + uriFoto;*/;
 	}
 	
+	@Override
+    public boolean equals(Object obj) {
+		
+		if (this == obj) {
+            return true;
+        }
+        if (obj == null || getClass() != obj.getClass()) {
+            return false;
+        }
+        Producto objProducto = (Producto) obj;
+        return this.id == objProducto.id;
+        
+    }
 	
+	@Override
+    public int hashCode() {
+        return Objects.hash(this.id);
+    }
 
 }
